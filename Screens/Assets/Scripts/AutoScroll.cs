@@ -5,16 +5,16 @@ using TMPro;
 
 public class AutoScroll : MonoBehaviour
 {
-    private float speed = 100.0f;
-    private float textPosBegin = -1392.0f;
-    private float boundaryTextEnd = 1392.0f;
-    
+    float speed = 300.0f;
+    float textPosBegin = -833.0f;
+    float boundaryTextEnd = 673.0f;
+
     RectTransform myGorectTransform;
     [SerializeField] 
-    private TextMeshProUGUI mainText;
+    TextMeshProUGUI mainText;
 
     [SerializeField] 
-    private bool isLooping = false;
+    bool isLooping = false;
     
     // Start is called before the first frame update
     void Start()
@@ -22,28 +22,38 @@ public class AutoScroll : MonoBehaviour
         myGorectTransform = gameObject.GetComponent<RectTransform>();
         StartCoroutine(AutoScrollText());
     }
-
     IEnumerator AutoScrollText()
     {
-        while (myGorectTransform.localPosition.y < boundaryTextEnd)
-        {
-            myGorectTransform.Translate(Vector3.up*speed*Time.deltaTime);
+        // Calculate the boundaries of the UI box
+        float minY = textPosBegin;
+        float maxY = boundaryTextEnd;
 
-            if (myGorectTransform.localPosition.y > boundaryTextEnd)
+        while (true)
+        {
+            // Scroll the text upward
+            myGorectTransform.Translate(Vector3.up * speed * Time.deltaTime);
+
+            // Clamp the position of the text within the boundaries
+            Vector3 clampedPosition = myGorectTransform.localPosition;
+            clampedPosition.y = Mathf.Clamp(clampedPosition.y, minY, maxY);
+            myGorectTransform.localPosition = clampedPosition;
+
+            // Check if the text has reached the boundary
+            if (myGorectTransform.localPosition.y >= maxY)
             {
+                // If looping is enabled, reset the position of the text to the beginning
                 if (isLooping)
                 {
-                    myGorectTransform.localPosition = Vector3.up * textPosBegin;
+                    myGorectTransform.localPosition = new Vector3(myGorectTransform.localPosition.x, minY, myGorectTransform.localPosition.z);
                 }
-
                 else
                 {
+                    // If looping is disabled, break out of the loop
                     break;
                 }
             }
-            
+
             yield return null;
-        }    
+        }
     }
-    
 }
